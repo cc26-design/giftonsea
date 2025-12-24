@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>你的禮物還在海上QQ</title>
+  <style>
+    :root{
+      --sky1:#c9eeff;
+      --sky2:#7fcfff;
+
+      /* wave palette (layered, like the reference) */
+      --wBack:#3f6fa8;
+      --wMid:#1f4a86;
+      --wFront:#9fd3ff;
+      --wFoam:#cfeeff;
+
+      --ink:#05324a;
+
+      --peach:#ffb49f;
+      --peach2:#ffd0be;
+      --pink:#ff86b8;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100svh;
+      font-family: system-ui,-apple-system,"Noto Sans TC",sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 720px at 15% 10%, rgba(255,255,255,.85), transparent 58%),
+        radial-gradient(900px 620px at 85% 15%, rgba(255,255,255,.60), transparent 62%),
+        linear-gradient(180deg, var(--sky1), var(--sky2));
+      overflow-x:hidden;
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+      position:relative;
+    }
+
+    .sparkles{
+      position:fixed; inset:0;
+      pointer-events:none;
+      opacity:.18;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255,255,255,.90) 0 1.2px, transparent 2.2px),
+        radial-gradient(circle at 26% 62%, rgba(255,255,255,.62) 0 1px, transparent 2px),
+        radial-gradient(circle at 70% 22%, rgba(255,255,255,.62) 0 1px, transparent 2px),
+        radial-gradient(circle at 88% 66%, rgba(255,255,255,.64) 0 1px, transparent 2px);
+      filter: blur(.2px);
+      z-index:0;
+    }
+
+    /* drifting bubbles */
+    .drift{
+      position:fixed; inset:0;
+      pointer-events:none;
+      z-index:1;
+      opacity:.24;
+    }
+    .drift span{
+      position:absolute;
+      font-size: 18px;
+      animation: drift 10s linear infinite;
+      opacity:.75;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.08));
+      user-select:none;
+    }
+    @keyframes drift{
+      0%{ transform: translateY(25px) translateX(0) rotate(0deg); opacity:0; }
+      15%{ opacity:.75; }
+      100%{ transform: translateY(-120vh) translateX(70px) rotate(18deg); opacity:0; }
+    }
+
+    /* Ocean: layered SVG waves (more "wavy") */
+    .ocean{
+      position:fixed;
+      left:0; right:0; bottom:0;
+      height:62vh;
+      z-index:0;
+      overflow:hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,.06) 30%, rgba(0,0,0,.12) 100%);
+    }
+    .waveLayer{
+      position:absolute;
+      display:block;
+      left:-12%;
+      width:124%;
+      height:auto;
+      bottom:0;
+      pointer-events:none;
+      transform: translateX(0);
+    }
+
+    .waveLayer.back { bottom: 10vh; opacity:.95; }
+    .waveLayer.mid  { bottom: 3vh; opacity:.98; }
+    .waveLayer.front{ bottom: -6vh;  opacity:1; }
+    .waveLayer.foam { bottom: 4vh;  opacity:.55; mix-blend-mode: screen; }
+
+    /* animate horizontally for the "rolling sea" feeling */
+    .waveLayer.back  { animation: roll 16s linear infinite; }
+    .waveLayer.mid   { animation: rollR 12s linear infinite; }
+    .waveLayer.front { animation: roll 9s linear infinite; }
+    .waveLayer.foam  { animation: rollR 10s linear infinite; }
+
+    @keyframes roll{
+      from{ transform: translateX(0); }
+      to  { transform: translateX(-10%); }
+    }
+    @keyframes rollR{
+      from{ transform: translateX(-10%); }
+      to  { transform: translateX(0); }
+    }
+
+    /* boat */
+    .boat{
+      position:fixed;
+      left: 14%;
+      bottom: 20vh;
+      transform: translateX(-50%);
+      z-index:3;
+      font-size: 64px;
+      filter: drop-shadow(0 18px 24px rgba(0,0,0,.22));
+      animation: bob 3.0s ease-in-out infinite;
+      user-select:none;
+    }
+    @keyframes bob{
+      0%,100%{ transform: translateX(-50%) translateY(0) rotate(-1deg); }
+      50%    { transform: translateX(-50%) translateY(11px) rotate(1deg); }
+    }
+    .boat.kick{
+      animation: boatKick .65s ease-out 1;
+    }
+    @keyframes boatKick{
+      0%   { transform: translateX(-50%) translateY(0) rotate(-1deg); }
+      18%  { transform: translateX(-50%) translateY(10px) rotate(2deg); }
+      55%  { transform: translateX(calc(-50% + 320px)) translateY(-10px) rotate(14deg); }
+      82%  { transform: translateX(calc(-50% + 60px)) translateY(6px) rotate(-4deg); }
+      100% { transform: translateX(-50%) translateY(0) rotate(-1deg); }
+    }
+
+    /* Floating content group — no card */
+    .float{
+      position:relative;
+      z-index:4;
+      width:min(900px, 92vw);
+      margin: min(12vh, 110px) auto 18vh;
+      padding: 12px 14px;
+      text-align:center;
+      animation: floatBob 3.4s ease-in-out infinite;
+    }
+    @keyframes floatBob{
+      0%,100%{ transform: translateY(0); }
+      50%{ transform: translateY(10px); }
+    }
+
+    .pillrow{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: rgba(5,50,74,.62);
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.78);
+      background: rgba(255,255,255,.46);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 28px rgba(0,0,0,.08);
+    }
+
+    .sad{
+      font-size: 60px;
+      margin: 8px 0 10px;
+      filter: drop-shadow(0 14px 18px rgba(0,0,0,.14));
+      animation: sob 1.35s ease-in-out infinite;
+      user-select:none;
+    }
+    @keyframes sob{
+      0%,100%{ transform: translateY(0) scale(1); }
+      50%{ transform: translateY(4px) scale(1.02); }
+    }
+
+    h1{
+      margin: 2px 0 10px;
+      font-size: 34px;
+      letter-spacing:.4px;
+      text-shadow: 0 10px 24px rgba(0,0,0,.10);
+    }
+    h1.shake{ animation: shake .55s ease-in-out 1; }
+    @keyframes shake{
+      0%{ transform: translateX(0); }
+      15%{ transform: translateX(-6px); }
+      30%{ transform: translateX(6px); }
+      45%{ transform: translateX(-4px); }
+      60%{ transform: translateX(4px); }
+      100%{ transform: translateX(0); }
+    }
+
+    .msg{
+      margin: 0 auto 14px;
+      font-size: 16px;
+      line-height: 1.9;
+      color: rgba(5,50,74,.84);
+      max-width: 46em;
+      text-shadow: 0 10px 18px rgba(255,255,255,.35);
+    }
+
+    .barWrap{
+      margin: 16px auto 8px;
+      max-width: 560px;
+      border: 1px solid rgba(255,255,255,.80);
+      background: rgba(255,255,255,.40);
+      border-radius: 999px;
+      overflow:hidden;
+      height: 14px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+    .bar{
+      height:100%;
+      width: 12%;
+      background: linear-gradient(90deg, rgba(255,134,184,.92), rgba(255,180,160,.92));
+      border-radius: 999px;
+      animation: progress 10s ease-in-out infinite;
+    }
+    @keyframes progress{
+      0%{ width: 12%; }
+      35%{ width: 46%; }
+      70%{ width: 66%; }
+      100%{ width: 18%; }
+    }
+
+    .loading{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-top: 6px;
+      font-size: 14px;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 10px 18px rgba(0,0,0,.18);
+    }
+    .dots{ display:inline-flex; gap:4px; }
+    .dot{
+      width:6px; height:6px;
+      border-radius:999px;
+      background: rgba(255,255,255,.85);
+      animation: bounce 1s infinite;
+    }
+    .dot:nth-child(2){ animation-delay:.12s; }
+    .dot:nth-child(3){ animation-delay:.24s; }
+    @keyframes bounce{
+      0%,100%{ transform: translateY(0); opacity:.45;}
+      50%{ transform: translateY(-6px); opacity:1;}
+    }
+
+    .btnrow{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top: 16px;
+    }
+    button{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      color: rgba(5,50,74,.86);
+      background: rgba(255, 210, 190, .50);
+      border: 1px solid rgba(255, 255, 255, .82);
+      padding: 14px 18px;
+      border-radius: 20px;
+      min-width: 260px;
+      cursor:pointer;
+      transition: transform .06s ease, background .2s ease, border-color .2s ease;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 34px rgba(0,0,0,.10);
+      font-weight: 800;
+      letter-spacing:.2px;
+    }
+    button:hover{
+      background: rgba(255, 180, 160, .55);
+      border-color: rgba(255,255,255,.95);
+    }
+    button:active{ transform: translateY(1px); }
+
+    .note{
+      margin-top: 14px;
+      font-size: 12.5px;
+      color: rgba(255,255,255,.88);
+      line-height:1.65;
+      text-shadow: 0 10px 18px rgba(0,0,0,.18);
+    }
+
+    @media (max-width: 520px){
+      .boat{ font-size: 56px; left: 16%; bottom: 22vh; }
+      h1{ font-size: 26px; }
+      .sad{ font-size: 54px; }
+      .ocean{ height: 66vh; }
+      .float{ margin-top: 10vh; margin-bottom: 22vh; }
+      button{ min-width: 220px; }
+      .waveLayer.back { bottom: 14vh; }
+      .waveLayer.mid  { bottom: 6vh; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sparkles" aria-hidden="true"></div>
+  <div class="drift" id="drift" aria-hidden="true"></div>
+
+  <div class="ocean" aria-hidden="true">
+    <svg class="waveLayer back" viewBox="0 0 1200 420" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="var(--wBack)" d="M0,120 C150,40 300,200 450,120 C600,40 750,200 900,120 C1020,60 1110,140 1200,120 L1200,420 L0,420 Z"/>
+    </svg>
+
+    <svg class="waveLayer mid" viewBox="0 0 1200 420" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="var(--wMid)" d="M0,150 C160,90 300,230 470,150 C640,70 760,230 930,150 C1040,100 1120,180 1200,150 L1200,420 L0,420 Z"/>
+    </svg>
+
+    <svg class="waveLayer foam" viewBox="0 0 1200 420" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="var(--wFoam)" d="M0,162 C170,112 300,238 470,162 C640,86 760,238 930,162 C1040,112 1120,194 1200,162 L1200,420 L0,420 Z"/>
+    </svg>
+
+    <svg class="waveLayer front" viewBox="0 0 1200 420" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="var(--wFront)" d="M0,180 C160,120 310,260 480,180 C650,100 770,260 940,180 C1040,130 1120,210 1200,180 L1200,420 L0,420 Z"/>
+    </svg>
+  </div>
+
+  <div class="boat" id="boat" aria-hidden="true">🚢</div>
+
+  <main class="float" aria-live="polite">
+    <div class="pillrow">
+      <div class="pill">🌊 海運模式</div>
+      <div class="pill">📦 迷路中</div>
+      <div class="pill">🥲 先哭一下</div>
+    </div>
+
+    <div class="sad" id="sadFace">🥺</div>
+
+    <h1 id="title">你的禮物還在海上QQ</h1>
+
+    <p class="msg" id="msg">
+      姐姐先不要揍我～它真的在努力漂過來。<br/>
+      我已經派出海豚客服、海星工程師、還有一隻很兇的章魚去催件了。
+    </p>
+
+    <div class="barWrap" aria-hidden="true"><div class="bar"></div></div>
+    <div class="loading">
+      追蹤中（保證不準確）
+      <span class="dots" aria-hidden="true">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </span>
+    </div>
+
+    <div class="btnrow">
+      <button id="cryBtn">再哭一次（重整）🥲</button>
+    </div>
+
+    <div class="note">
+      如果你看到這頁，代表禮物正在更新 / 迷路 / 或者海上塞車。<br/>
+      你可以先去喝水、走兩步、或假裝沒看到我（拜託）。
+    </div>
+  </main>
+
+  <script>
+    // drifting emojis (bubbles + sea vibes)
+    const drift = document.getElementById("drift");
+    const icons = ["🫧","🐳","🐬","🦑","🪸","🌙","⭐","✨","🧡","🩷","💧","🐟","🦀"];
+    for(let i=0;i<26;i++){
+      const s = document.createElement("span");
+      s.textContent = icons[Math.floor(Math.random()*icons.length)];
+      s.style.left = Math.floor(Math.random()*100) + "vw";
+      s.style.top = (60 + Math.random()*60) + "vh";
+      s.style.animationDuration = (8 + Math.random()*9) + "s";
+      s.style.animationDelay = (-Math.random()*12) + "s";
+      s.style.fontSize = (14 + Math.random()*18) + "px";
+      drift.appendChild(s);
+    }
+
+    const boat = document.getElementById("boat");
+    const title = document.getElementById("title");
+    const msg = document.getElementById("msg");
+    const cryBtn = document.getElementById("cryBtn");
+
+    const baseTitle = "你的禮物還在海上QQ";
+    let busy = false;
+
+    const sadFace = document.getElementById("sadFace");
+
+    cryBtn.addEventListener("click", () => {
+      if (busy) return;
+      busy = true;
+
+      // big cry face moment
+      const originalFace = sadFace.textContent;
+      sadFace.textContent = "😭";
+      sadFace.style.transform = "scale(1.25)";
+      setTimeout(() => {
+        sadFace.textContent = originalFace;
+        sadFace.style.transform = "scale(1)";
+      }, 700);
+
+      boat.classList.remove("kick");
+      void boat.offsetWidth;
+      boat.classList.add("kick");
+
+      title.classList.remove("shake");
+      void title.offsetWidth;
+      title.classList.add("shake");
+      title.textContent = "你的禮物還在海上QQQQQ";
+
+      msg.style.transform = "translateX(-2px)";
+      setTimeout(() => msg.style.transform = "translateX(2px)", 120);
+      setTimeout(() => msg.style.transform = "translateX(0)", 260);
+
+      setTimeout(() => {
+        title.textContent = baseTitle;
+        title.classList.remove("shake");
+        boat.classList.remove("kick");
+        busy = false;
+      }, 800);
+    });
+  </script>
+</body>
+</html>
